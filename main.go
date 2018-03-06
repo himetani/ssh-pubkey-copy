@@ -206,7 +206,7 @@ func (s *Session) Close() {
 	}
 }
 
-// Get is func that get file contents
+// Connect is func to connect
 func (s *Session) Connect() ([]byte, error) {
 	cmd := fmt.Sprintf("echo 'connect'\n")
 	return s.session.Output(cmd)
