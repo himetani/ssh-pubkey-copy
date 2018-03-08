@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -70,8 +71,7 @@ func (c *CLI) Run() int {
 	}
 
 	if subcmd == "targets" {
-		results := targetsCmd(dests, privateKey)
-		renderTable(results)
+		targetsCmd(dests, privateKey)
 	}
 
 	if subcmd == "copy" {
@@ -81,7 +81,27 @@ func (c *CLI) Run() int {
 	return 0
 }
 
-func targetsCmd(dests []Dest, privateKey string) []Result {
+func targetsCmd(dests []Dest, privateKey string) {
+	results := connectWithKey(dests, privateKey)
+	renderTable(results)
+}
+
+func copyCmd() {
+
+}
+
+func getPassword() (string, error) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Password: ")
+	passwd, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+
+	return passwd, nil
+}
+
+func connectWithKey(dests []Dest, privateKey string) []Result {
 	resultsChan := make(chan Result)
 	results := []Result{}
 
@@ -103,10 +123,6 @@ func targetsCmd(dests []Dest, privateKey string) []Result {
 	close(resultsChan)
 
 	return results
-}
-
-func copyCmd() {
-
 }
 
 func showUsage() {
