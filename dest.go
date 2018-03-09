@@ -25,11 +25,39 @@ func NewDests(cfgPath, port string) ([]Dest, error) {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return nil, err
 	}
+
+	for i, _ := range dests {
+		dests[i].Port = port
+	}
 	return dests, nil
 }
 
 func (d *Dest) ConnectWithPrivateKey(resultChan chan<- Result, privateKey string) {
-	session, err := NewSession(d.Host, d.Port, d.User, privateKey)
+	session, err := NewPrivateKeySession(d.Host, d.Port, d.User, privateKey)
+	if err != nil {
+		resultChan <- Result{Dest: &Dest{Host: d.Host, User: d.User}, Err: err}
+		return
+	}
+
+	defer session.Close()
+
+	_, err = session.Connect()
+	if err != nil {
+		resultChan <- Result{Dest: &Dest{Host: d.Host, User: d.User}, Err: err}
+		return
+	}
+
+	if err != nil {
+		resultChan <- Result{Dest: &Dest{Host: d.Host, User: d.User}, Err: err}
+		return
+	}
+
+	resultChan <- Result{Dest: d, Err: nil}
+	return
+}
+
+func (d *Dest) ConnectWithPassword(resultChan chan<- Result, password string) {
+	session, err := NewPasswordSession(d.Host, d.Port, d.User, password)
 	if err != nil {
 		resultChan <- Result{Dest: d, Err: err}
 		return

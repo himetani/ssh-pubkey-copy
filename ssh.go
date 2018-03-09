@@ -17,8 +17,8 @@ type Session struct {
 	StdinPipe io.WriteCloser
 }
 
-// NewSession returns new Session instance
-func NewSession(ip, port, user, privateKey string) (*Session, error) {
+// NewPrivateKeySession returns new Session instance
+func NewPrivateKeySession(ip, port, user, privateKey string) (*Session, error) {
 	buf, err := ioutil.ReadFile(privateKey)
 	if err != nil {
 		return nil, err
@@ -34,6 +34,34 @@ func NewSession(ip, port, user, privateKey string) (*Session, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(key),
+		},
+		Timeout: 1 * time.Second,
+	}
+
+	conn, err := ssh.Dial("tcp", ip+":"+port, config)
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := conn.NewSession()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Session{
+		config:  config,
+		conn:    conn,
+		session: session,
+	}, nil
+}
+
+// NewPasswordSession returns new Session instance
+func NewPasswordSession(ip, port, user, password string) (*Session, error) {
+	config := &ssh.ClientConfig{
+		User:            user,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Auth: []ssh.AuthMethod{
+			ssh.Password(password),
 		},
 		Timeout: 1 * time.Second,
 	}

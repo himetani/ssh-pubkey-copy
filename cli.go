@@ -1,15 +1,17 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/olekukonko/tablewriter"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 type CLI struct {
@@ -75,7 +77,10 @@ func (c *CLI) Run() int {
 	}
 
 	if subcmd == "copy" {
-		fmt.Println("Not implemented yet")
+		if err := copyCmd(dests); err != nil {
+			fmt.Println(err.Error())
+			return 1
+		}
 	}
 
 	return 0
@@ -86,19 +91,27 @@ func targetsCmd(dests []Dest, privateKey string) {
 	renderTable(results)
 }
 
-func copyCmd() {
+func copyCmd(dests []Dest) error {
+	password, err := getPassword()
+	if err != nil {
+		return err
+	}
 
+	results := connectWithPassword(dests, password)
+	renderTable(results)
+
+	return nil
 }
 
 func getPassword() (string, error) {
-	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Password: ")
-	passwd, err := reader.ReadString('\n')
+	password, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
+		log.Fatal(err)
 		return "", err
 	}
 
-	return passwd, nil
+	return string(password), nil
 }
 
 func connectWithKey(dests []Dest, privateKey string) []Result {
@@ -106,7 +119,33 @@ func connectWithKey(dests []Dest, privateKey string) []Result {
 	results := []Result{}
 
 	for _, dest := range dests {
+		dest := dest
 		go dest.ConnectWithPrivateKey(resultsChan, privateKey)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(dests))
+
+	go func() {
+		for r := range resultsChan {
+			results = append(results, r)
+			wg.Done()
+		}
+	}()
+
+	wg.Wait()
+	close(resultsChan)
+
+	return results
+}
+
+func connectWithPassword(dests []Dest, password string) []Result {
+	resultsChan := make(chan Result)
+	results := []Result{}
+
+	for _, dest := range dests {
+		dest := dest
+		go dest.ConnectWithPassword(resultsChan, password)
 	}
 
 	var wg sync.WaitGroup
@@ -138,7 +177,7 @@ func renderTable(results []Result) {
 
 	for _, r := range results {
 		if r.Err != nil {
-			table.Append([]string{fmt.Sprintf("%s@%s", r.Dest.User, r.Dest.Host), "🙅♀️Invalid Host"})
+			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.Dest.User, r.Dest.Host, r.Dest.Port), "🙅♀️Invalid Host"})
 		} else {
 			table.Append([]string{fmt.Sprintf("%s@%s", r.Dest.User, r.Dest.Host), "🙆PubKey is Copied"})
 		}
