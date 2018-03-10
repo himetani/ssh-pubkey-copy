@@ -56,16 +56,17 @@ func (d *Dest) ConnectWithPrivateKey(resultChan chan<- Result, privateKey string
 	return
 }
 
-func (d *Dest) ConnectWithPassword(resultChan chan<- Result, password string) {
-	session, err := NewPasswordSession(d.Host, d.Port, d.User, password)
+func (d *Dest) ExecWithPassword(resultChan chan<- Result, password, pubkey string) {
+	session, err := NewPasswordSession(d.Host, d.Port, "vagrant", password)
 	if err != nil {
 		resultChan <- Result{Dest: d, Err: err}
 		return
 	}
 	defer session.Close()
 
-	bytes, err := session.Connect()
-	fmt.Println(string(bytes))
+	cmd := fmt.Sprintf("echo %s | sudo -S su %s; mkdir -p .ssh/; echo \"%s\" >> .ssh/authorized_keys", password, d.User, pubkey)
+
+	_, err = session.Exec(cmd)
 	if err != nil {
 		resultChan <- Result{Dest: d, Err: err}
 		return

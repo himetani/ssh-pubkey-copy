@@ -99,3 +99,8 @@ func (s *Session) Connect() ([]byte, error) {
 	cmd := fmt.Sprintf("echo 'connect'\n")
 	return s.session.Output(cmd)
 }
+
+// Exec is func to exec cmd on the session
+func (s *Session) Exec(cmd string) ([]byte, error) {
+	return s.session.Output(cmd)
+}

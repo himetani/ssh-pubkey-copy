@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -77,7 +78,8 @@ func (c *CLI) Run() int {
 	}
 
 	if subcmd == "copy" {
-		if err := copyCmd(dests); err != nil {
+		pubkey := privateKey + ".pub"
+		if err := copyCmd(dests, pubkey); err != nil {
 			fmt.Println(err.Error())
 			return 1
 		}
@@ -91,13 +93,18 @@ func targetsCmd(dests []Dest, privateKey string) {
 	renderTable(results)
 }
 
-func copyCmd(dests []Dest) error {
+func copyCmd(dests []Dest, pubkey string) error {
 	password, err := getPassword()
 	if err != nil {
 		return err
 	}
 
-	results := connectWithPassword(dests, password)
+	pubKeyContent, err := getPubKeyContent(pubkey)
+	if err != nil {
+		return err
+	}
+
+	results := connectWithPassword(dests, password, pubKeyContent)
 	renderTable(results)
 
 	return nil
@@ -112,6 +119,15 @@ func getPassword() (string, error) {
 	}
 
 	return string(password), nil
+}
+
+func getPubKeyContent(pubKeyPath string) (string, error) {
+	content, err := ioutil.ReadFile(pubKeyPath)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(string(content))
+	return string(content), nil
 }
 
 func connectWithKey(dests []Dest, privateKey string) []Result {
@@ -139,13 +155,13 @@ func connectWithKey(dests []Dest, privateKey string) []Result {
 	return results
 }
 
-func connectWithPassword(dests []Dest, password string) []Result {
+func connectWithPassword(dests []Dest, password, pubKeyContent string) []Result {
 	resultsChan := make(chan Result)
 	results := []Result{}
 
 	for _, dest := range dests {
 		dest := dest
-		go dest.ConnectWithPassword(resultsChan, password)
+		go dest.ExecWithPassword(resultsChan, password, pubKeyContent)
 	}
 
 	var wg sync.WaitGroup
