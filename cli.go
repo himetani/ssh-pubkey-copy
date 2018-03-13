@@ -32,7 +32,7 @@ func (c *CLI) Run() int {
 
 	flag.BoolVar(&help, "h", false, "Show help")
 	flag.BoolVar(&quiet, "q", false, "Don't show the INFO log")
-	flag.StringVar(&privateKey, "i", "", "Private key")
+	flag.StringVar(&privateKey, "i", "", "Private key (Default: $HOME/.ssh/id_rsa.pub")
 	flag.StringVar(&port, "p", "", "Port")
 	flag.Parse()
 
@@ -117,6 +117,7 @@ func getPassword() (string, error) {
 		log.Fatal(err)
 		return "", err
 	}
+	fmt.Println("")
 
 	return string(password), nil
 }
@@ -126,7 +127,6 @@ func getPubKeyContent(pubKeyPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(content))
 	return string(content), nil
 }
 
@@ -189,6 +189,7 @@ func showUsage() {
 func renderTable(results []Result) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Destination", "Result"})
+	table.SetRowLine(true)
 	table.SetHeaderColor(tablewriter.Colors{tablewriter.FgHiRedColor}, tablewriter.Colors{tablewriter.FgHiRedColor})
 
 	for _, r := range results {
