@@ -1,11 +1,7 @@
 package main
 
-import (
-	"os"
-)
+import "github.com/himetani/ssh-pubkey-copy/cmd"
 
 func main() {
-	cli := &CLI{}
-
-	os.Exit(cli.Run())
+	cmd.Execute()
 }

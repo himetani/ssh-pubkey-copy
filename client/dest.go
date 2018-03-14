@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"encoding/json"
@@ -83,4 +83,8 @@ func (d *Dest) ExecWithPassword(resultChan chan<- Result, password, pubkey strin
 type Result struct {
 	*Dest
 	Err error
+}
+
+func Hoge() {
+	fmt.Println("hoge")
 }
