@@ -87,7 +87,7 @@ func renderTable(results []client.Result) {
 		if r.Err != nil {
 			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.Dest.User, r.Dest.Host, r.Dest.Port), "🙅♀️Invalid Host"})
 		} else {
-			table.Append([]string{fmt.Sprintf("%s@%s", r.Dest.User, r.Dest.Host), "🙆PubKey is Copied"})
+			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.Dest.User, r.Dest.Host, r.Dest.Port), "🙆PubKey is Copied"})
 		}
 	}
 	table.Render()

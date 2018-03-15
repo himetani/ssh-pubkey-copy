@@ -29,6 +29,6 @@ func Execute() {
 
 func init() {
 	RootCmd.PersistentFlags().StringVar(&port, "port", "22", "Port to connect to on the remote host")
-	RootCmd.PersistentFlags().StringVar(&privateKey, "privateKey", "", "Selects a file from which the identity (private key) for public key authentication is read (default is $HOME/.ssh/id_rsa.pub)")
-	RootCmd.PersistentFlags().StringVar(&destsYaml, "dests", "", "dests.yml")
+	RootCmd.PersistentFlags().StringVarP(&privateKey, "identity-file", "i", "", "Selects a file from which the identity (private key) for public key authentication is read (default is $HOME/.ssh/id_rsa.pub)")
+	RootCmd.PersistentFlags().StringVarP(&destsYaml, "dests-file", "d", "", "dests.yml")
 }
