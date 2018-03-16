@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/himetani/ssh-pubkey-copy/client"
+	"github.com/himetani/ssh-pubkey-copy/table"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +46,7 @@ func status(cmd *cobra.Command, args []string) error {
 	}
 
 	results := connectWithKey(dests, privateKey)
-	renderTable(results)
+	table.Render(results)
 
 	return nil
 }
@@ -75,20 +74,4 @@ func connectWithKey(dests []client.Dest, privateKey string) []client.Result {
 	close(resultsChan)
 
 	return results
-}
-
-func renderTable(results []client.Result) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Destination", "Result"})
-	table.SetRowLine(true)
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.FgHiRedColor}, tablewriter.Colors{tablewriter.FgHiRedColor})
-
-	for _, r := range results {
-		if r.Err != nil {
-			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.Dest.User, r.Dest.Host, r.Dest.Port), "🙅♀️Invalid Host"})
-		} else {
-			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.Dest.User, r.Dest.Host, r.Dest.Port), "🙆PubKey is Copied"})
-		}
-	}
-	table.Render()
 }

@@ -84,7 +84,3 @@ type Result struct {
 	*Dest
 	Err error
 }
-
-func Hoge() {
-	fmt.Println("hoge")
-}
