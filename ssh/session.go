@@ -1,4 +1,4 @@
-package client
+package ssh
 
 import (
 	"fmt"
@@ -103,4 +103,9 @@ func (s *Session) Connect() ([]byte, error) {
 // Exec is func to exec cmd on the session
 func (s *Session) Exec(cmd string) ([]byte, error) {
 	return s.session.Output(cmd)
+}
+
+type Result struct {
+	*Dest
+	Err error
 }

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/himetani/ssh-pubkey-copy/client"
+	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/olekukonko/tablewriter"
 )
 
-func Render(results []client.Result) {
+func Render(results []ssh.Result) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Destination", "Result"})
 	table.SetRowLine(true)

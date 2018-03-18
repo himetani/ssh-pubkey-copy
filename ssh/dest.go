@@ -1,4 +1,4 @@
-package client
+package ssh
 
 import (
 	"encoding/json"
@@ -78,9 +78,4 @@ func (d *Dest) ExecWithPassword(resultChan chan<- Result, password, pubkey strin
 	}
 
 	resultChan <- Result{Dest: d, Err: nil}
-}
-
-type Result struct {
-	*Dest
-	Err error
 }

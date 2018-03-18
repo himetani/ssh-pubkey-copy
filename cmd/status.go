@@ -3,9 +3,8 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
-	"sync"
 
-	"github.com/himetani/ssh-pubkey-copy/client"
+	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/himetani/ssh-pubkey-copy/table"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -27,7 +26,7 @@ func init() {
 }
 
 func status(cmd *cobra.Command, args []string) error {
-	var dests []client.Dest
+	var dests []ssh.Dest
 	var err error
 
 	if privateKey == "" {
@@ -39,39 +38,15 @@ func status(cmd *cobra.Command, args []string) error {
 	}
 
 	if destsYaml != "" {
-		dests, err = client.NewDests(destsYaml, port)
+		dests, err = ssh.NewDests(destsYaml, port)
 		if err != nil {
 			return err
 		}
 	}
 
-	results := connectWithKey(dests, privateKey)
+	client := ssh.NewKeyClient(privateKey)
+	results := client.Ping(dests)
 	table.Render(results)
 
 	return nil
-}
-
-func connectWithKey(dests []client.Dest, privateKey string) []client.Result {
-	resultsChan := make(chan client.Result)
-	results := []client.Result{}
-
-	for _, dest := range dests {
-		dest := dest
-		go dest.ConnectWithPrivateKey(resultsChan, privateKey)
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(len(dests))
-
-	go func() {
-		for r := range resultsChan {
-			results = append(results, r)
-			wg.Done()
-		}
-	}()
-
-	wg.Wait()
-	close(resultsChan)
-
-	return results
 }
