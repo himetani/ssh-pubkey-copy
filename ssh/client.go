@@ -13,26 +13,18 @@ type KeyClient struct {
 }
 
 func (k *KeyClient) Ping(dests []Dest) []Result {
-	resultsChan := make(chan Result)
 	results := []Result{}
-
-	for _, dest := range dests {
-		dest := dest
-		go dest.ConnectWithPrivateKey(resultsChan, k.privateKey)
-	}
-
 	var wg sync.WaitGroup
 	wg.Add(len(dests))
 
-	go func() {
-		for r := range resultsChan {
-			results = append(results, r)
-			wg.Done()
-		}
-	}()
-
+	for _, dest := range dests {
+		dest := dest
+		go func() {
+			defer wg.Done()
+			results = append(results, dest.ConnectWithPrivateKey(k.privateKey))
+		}()
+	}
 	wg.Wait()
-	close(resultsChan)
 
 	return results
 }

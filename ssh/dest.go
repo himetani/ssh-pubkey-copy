@@ -32,28 +32,24 @@ func NewDests(cfgPath, port string) ([]Dest, error) {
 	return dests, nil
 }
 
-func (d *Dest) ConnectWithPrivateKey(resultChan chan<- Result, privateKey string) {
+func (d *Dest) ConnectWithPrivateKey(privateKey string) Result {
 	session, err := NewPrivateKeySession(d.Host, d.Port, d.User, privateKey)
 	if err != nil {
-		resultChan <- Result{Dest: d, Err: err}
-		return
+		return Result{Dest: d, Err: err}
 	}
 
 	defer session.Close()
 
 	_, err = session.Connect()
 	if err != nil {
-		resultChan <- Result{Dest: d, Err: err}
-		return
+		return Result{Dest: d, Err: err}
 	}
 
 	if err != nil {
-		resultChan <- Result{Dest: d, Err: err}
-		return
+		return Result{Dest: d, Err: err}
 	}
 
-	resultChan <- Result{Dest: d, Err: nil}
-	return
+	return Result{Dest: d, Err: nil}
 }
 
 func (d *Dest) ExecWithPassword(resultChan chan<- Result, password, pubkey string) {
