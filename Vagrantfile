@@ -67,14 +67,21 @@ Vagrant.configure("2") do |config|
 userdel test1
 userdel test2
 userdel test3
+userdel common
 rm -rf /home/test1
 rm -rf /home/test2
 rm -rf /home/test3
+rm -rf /home/common
 useradd test1
 useradd test2
 useradd test3
+useradd common
 echo 'fakepass1' | passwd --stdin test1
 echo 'fakepass2' | passwd --stdin test2
 echo 'fakepass3' | passwd --stdin test3
+echo 'fakepasscommon' | passwd --stdin common
+echo 'test1 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
+echo 'test2 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
+echo 'test3 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
    SHELL
 end
