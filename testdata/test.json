@@ -1,7 +1,13 @@
 [{
-    "host": "hogeaf",
+    "host": "127.0.0.1",
     "user": "vagrant"
 },{
     "host": "127.0.0.1",
-    "user": "vagrant"
+    "user": "test1"
+},{
+    "host": "127.0.0.1",
+    "user": "test2"
+},{
+    "host": "127.0.0.1",
+    "user": "test2"
 }]
