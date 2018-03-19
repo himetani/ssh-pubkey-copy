@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/himetani/ssh-pubkey-copy/ssh"
@@ -15,9 +14,6 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show the connectivity status of target users of remote host",
 	Long:  `Show the connectivity status of target users of remote host`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("status cmd called")
-	},
 }
 
 func init() {
