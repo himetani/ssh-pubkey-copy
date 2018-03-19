@@ -64,24 +64,24 @@ Vagrant.configure("2") do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
    config.vm.provision "shell", inline: <<-SHELL
-userdel test1
-userdel test2
-userdel test3
+userdel clienttest1
+userdel clienttest2
+userdel clienttest3
 userdel common
-rm -rf /home/test1
-rm -rf /home/test2
-rm -rf /home/test3
+rm -rf /home/clienttest1
+rm -rf /home/clienttest2
+rm -rf /home/clienttest3
 rm -rf /home/common
-useradd test1
-useradd test2
-useradd test3
+useradd clienttest1
+useradd clienttest2
+useradd clienttest3
 useradd common
-echo 'fakepass1' | passwd --stdin test1
-echo 'fakepass2' | passwd --stdin test2
-echo 'fakepass3' | passwd --stdin test3
+echo 'fakepass1' | passwd --stdin clienttest1
+echo 'fakepass2' | passwd --stdin clienttest2
+echo 'fakepass3' | passwd --stdin clienttest3
 echo 'fakepasscommon' | passwd --stdin common
-echo 'test1 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
-echo 'test2 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
-echo 'test3 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
+echo 'clienttest1 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
+echo 'clienttest2 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
+echo 'clienttest3 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
    SHELL
 end
