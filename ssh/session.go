@@ -2,23 +2,38 @@ package ssh
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"time"
 
 	"golang.org/x/crypto/ssh"
 )
 
-// Session is struct representing ssh Session
-type Session struct {
-	config    *ssh.ClientConfig
-	conn      *ssh.Client
-	session   *ssh.Session
-	StdinPipe io.WriteCloser
+// SSHSession is struct representing ssh Session
+type SSHSession struct {
+	conn    *ssh.Client
+	session *ssh.Session
+}
+
+type Session interface {
+	Executor
+	Connector
+	Closer
+}
+
+type Executor interface {
+	Exec()
+}
+
+type Connector interface {
+	Connect()
+}
+
+type Closer interface {
+	Close()
 }
 
 // NewPrivateKeySession returns new Session instance
-func NewPrivateKeySession(ip, port, user, privateKey string) (*Session, error) {
+func NewPrivateKeySession(ip, port, user, privateKey string) (*SSHSession, error) {
 	buf, err := ioutil.ReadFile(privateKey)
 	if err != nil {
 		return nil, err
@@ -48,15 +63,14 @@ func NewPrivateKeySession(ip, port, user, privateKey string) (*Session, error) {
 		return nil, err
 	}
 
-	return &Session{
-		config:  config,
+	return &SSHSession{
 		conn:    conn,
 		session: session,
 	}, nil
 }
 
 // NewPasswordSession returns new Session instance
-func NewPasswordSession(ip, port, user, password string) (*Session, error) {
+func NewPasswordSession(ip, port, user, password string) (*SSHSession, error) {
 	config := &ssh.ClientConfig{
 		User:            user,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
@@ -76,15 +90,14 @@ func NewPasswordSession(ip, port, user, password string) (*Session, error) {
 		return nil, err
 	}
 
-	return &Session{
-		config:  config,
+	return &SSHSession{
 		conn:    conn,
 		session: session,
 	}, nil
 }
 
 // Close close the session & connection
-func (s *Session) Close() {
+func (s *SSHSession) Close() {
 	if s.session != nil {
 		s.session.Close()
 	}
@@ -95,13 +108,13 @@ func (s *Session) Close() {
 }
 
 // Connect is func to connect
-func (s *Session) Connect() ([]byte, error) {
+func (s *SSHSession) Connect() ([]byte, error) {
 	cmd := fmt.Sprintf("echo 'connect'\n")
 	return s.session.Output(cmd)
 }
 
 // Exec is func to exec cmd on the session
-func (s *Session) Exec(cmd string) ([]byte, error) {
+func (s *SSHSession) Exec(cmd string) ([]byte, error) {
 	return s.session.Output(cmd)
 }
 
