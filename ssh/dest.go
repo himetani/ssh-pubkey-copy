@@ -12,6 +12,7 @@ type Dest struct {
 	User string `json:"user"`
 }
 
+// NewDests return slice of Dest type
 func NewDests(cfgPath, port string) ([]Dest, error) {
 	file, err := os.Open(cfgPath)
 	if err != nil {

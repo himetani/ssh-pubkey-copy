@@ -41,21 +41,29 @@ func status(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	client := ssh.NewKeyClient(privateKey)
-	results := []ssh.Result{}
+	client := ssh.PubKeyCopyClient{}
+	rows := make([]table.Row, len(dests))
+
 	var wg sync.WaitGroup
 	wg.Add(len(dests))
 
-	for _, dest := range dests {
-		dest := dest
-		go func() {
+	for i, d := range dests {
+		go func(i int, dest ssh.Dest) {
 			defer wg.Done()
-			results = append(results, client.Ping(dest))
+
+			session, err := ssh.NewPrivateKeySession(dest.Host, dest.Port, dest.User, privateKey)
+			if err != nil {
+				rows[i] = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
+				return
+			}
+			defer session.Close()
+			rows[i] = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.Ping(session)}
 			return
-		}()
+		}(i, d)
 	}
+
 	wg.Wait()
-	table.Render(results)
+	table.Render(rows)
 
 	return nil
 }

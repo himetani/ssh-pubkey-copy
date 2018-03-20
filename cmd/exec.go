@@ -1,8 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/himetani/ssh-pubkey-copy/ssh"
-	"github.com/himetani/ssh-pubkey-copy/table"
 	"github.com/spf13/cobra"
 )
 
@@ -29,9 +30,7 @@ func exec(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	client := ssh.NewPasswordClient("hoge")
-	results := client.Ping(dests)
-	table.Render(results)
+	fmt.Println(dests)
 
 	return nil
 }

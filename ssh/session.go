@@ -8,32 +8,36 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// SSHSession is struct representing ssh Session
-type SSHSession struct {
+// Wrapper is the struct that wraps ssh connectivity
+type Wrapper struct {
 	conn    *ssh.Client
 	session *ssh.Session
 }
 
+// Session is the interface that wraps session behavior.
 type Session interface {
 	Executor
 	Connector
 	Closer
 }
 
+// Executor is the interface that wraps Exec method
 type Executor interface {
-	Exec()
+	Exec(string) ([]byte, error)
 }
 
+// Connector is the interface that wraps Connect method
 type Connector interface {
-	Connect()
+	Connect() ([]byte, error)
 }
 
+// Closer is the interface that wraps Close method
 type Closer interface {
 	Close()
 }
 
-// NewPrivateKeySession returns new Session instance
-func NewPrivateKeySession(ip, port, user, privateKey string) (*SSHSession, error) {
+// NewPrivateKeySession returns Session Wrapper instance whose session is established by private key
+func NewPrivateKeySession(ip, port, user, privateKey string) (*Wrapper, error) {
 	buf, err := ioutil.ReadFile(privateKey)
 	if err != nil {
 		return nil, err
@@ -63,14 +67,14 @@ func NewPrivateKeySession(ip, port, user, privateKey string) (*SSHSession, error
 		return nil, err
 	}
 
-	return &SSHSession{
+	return &Wrapper{
 		conn:    conn,
 		session: session,
 	}, nil
 }
 
-// NewPasswordSession returns new Session instance
-func NewPasswordSession(ip, port, user, password string) (*SSHSession, error) {
+// NewPasswordSession returns Session Wrapper instance whose session is established by password
+func NewPasswordSession(ip, port, user, password string) (*Wrapper, error) {
 	config := &ssh.ClientConfig{
 		User:            user,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
@@ -90,14 +94,14 @@ func NewPasswordSession(ip, port, user, password string) (*SSHSession, error) {
 		return nil, err
 	}
 
-	return &SSHSession{
+	return &Wrapper{
 		conn:    conn,
 		session: session,
 	}, nil
 }
 
-// Close close the session & connection
-func (s *SSHSession) Close() {
+// Close is the function to close the session & connection
+func (s *Wrapper) Close() {
 	if s.session != nil {
 		s.session.Close()
 	}
@@ -107,18 +111,13 @@ func (s *SSHSession) Close() {
 	}
 }
 
-// Connect is func to connect
-func (s *SSHSession) Connect() ([]byte, error) {
+// Connect is the funcion to connect using seession
+func (w *Wrapper) Connect() ([]byte, error) {
 	cmd := fmt.Sprintf("echo 'connect'\n")
-	return s.session.Output(cmd)
+	return w.session.Output(cmd)
 }
 
-// Exec is func to exec cmd on the session
-func (s *SSHSession) Exec(cmd string) ([]byte, error) {
-	return s.session.Output(cmd)
-}
-
-type Result struct {
-	*Dest
-	Err error
+// Exec is the function to exec any cmd on the session
+func (w *Wrapper) Exec(cmd string) ([]byte, error) {
+	return w.session.Output(cmd)
 }
