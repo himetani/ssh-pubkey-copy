@@ -12,13 +12,13 @@ func TestPing(t *testing.T) {
 
 	type data struct {
 		TestName  string
-		Dests     []Dest
+		Dests     Dest
 		ResultErr error
 	}
 
 	tests := []data{
-		{"Copied", []Dest{Dest{Host: "127.0.0.1", Port: "2222", User: "vagrant"}}, nil},
-		{"Not Copied", []Dest{Dest{Host: "127.0.0.1", Port: "2222", User: "clienttest1"}}, errors.New("ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain")},
+		{"Copied", Dest{Host: "127.0.0.1", Port: "2222", User: "vagrant"}, nil},
+		{"Not Copied", Dest{Host: "127.0.0.1", Port: "2222", User: "clienttest1"}, errors.New("ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain")},
 	}
 
 	client := KeyClient{
@@ -26,12 +26,7 @@ func TestPing(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		results := client.Ping(test.Dests)
-		if len(results) != 1 {
-			t.Errorf("Test #%d %s: Unexpected error happened. len = %d\n", i, test.TestName, len(results))
-		}
-
-		result := results[0]
+		result := client.Ping(test.Dests)
 		if test.ResultErr == nil {
 			if result.Err != nil {
 				t.Errorf("Test #%d %s: Unexpected error happend. err expected nil, but got non-nil. msg=%s", i, test.TestName, result.Err.Error())

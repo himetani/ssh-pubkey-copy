@@ -1,9 +1,5 @@
 package ssh
 
-import (
-	"sync"
-)
-
 type Pinger interface {
 	Ping()
 }
@@ -16,6 +12,22 @@ type KeyClient struct {
 	privateKey string
 }
 
+func (k *KeyClient) Ping(dest Dest) Result {
+	session, err := NewPrivateKeySession(dest.Host, dest.Port, dest.User, k.privateKey)
+	if err != nil {
+		return Result{Dest: &dest, Err: err}
+	}
+	defer session.Close()
+
+	_, err = session.Connect()
+	if err != nil {
+		return Result{Dest: &dest, Err: err}
+	}
+
+	return Result{Dest: &dest, Err: nil}
+}
+
+/*
 func (k *KeyClient) Ping(dests []Dest) []Result {
 	results := []Result{}
 	var wg sync.WaitGroup
@@ -47,6 +59,7 @@ func (k *KeyClient) Ping(dests []Dest) []Result {
 
 	return results
 }
+*/
 
 type PasswordClient struct {
 	password string

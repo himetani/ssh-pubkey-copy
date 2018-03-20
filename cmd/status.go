@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"path/filepath"
+	"sync"
 
 	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/himetani/ssh-pubkey-copy/table"
@@ -41,7 +42,19 @@ func status(cmd *cobra.Command, args []string) error {
 	}
 
 	client := ssh.NewKeyClient(privateKey)
-	results := client.Ping(dests)
+	results := []ssh.Result{}
+	var wg sync.WaitGroup
+	wg.Add(len(dests))
+
+	for _, dest := range dests {
+		dest := dest
+		go func() {
+			defer wg.Done()
+			results = append(results, client.Ping(dest))
+			return
+		}()
+	}
+	wg.Wait()
 	table.Render(results)
 
 	return nil
