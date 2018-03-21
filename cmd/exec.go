@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -72,7 +73,6 @@ func exec(cmd *cobra.Command, args []string) error {
 	}
 
 	wg.Wait()
-	fmt.Println(rows)
 
 	return nil
 }
@@ -94,5 +94,5 @@ func getPubKeyContent(pubKeyPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(content), nil
+	return strings.TrimRight(string(content), "\n"), nil
 }
