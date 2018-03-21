@@ -8,7 +8,7 @@ import (
 )
 
 var port string
-var privateKey string
+var privateKeyPath string
 var destsYaml string
 
 // RootCmd represents the base command when called without any subcommands
@@ -29,6 +29,6 @@ func Execute() {
 
 func init() {
 	RootCmd.PersistentFlags().StringVar(&port, "port", "22", "Port to connect to on the remote host")
-	RootCmd.PersistentFlags().StringVarP(&privateKey, "identity-file", "i", "", "Selects a file from which the identity (private key) for public key authentication is read (default is $HOME/.ssh/id_rsa.pub)")
+	RootCmd.PersistentFlags().StringVarP(&privateKeyPath, "identity-file", "i", "", "Selects a file from which the identity (private key) for public key authentication is read (default is $HOME/.ssh/id_rsa.pub)")
 	RootCmd.PersistentFlags().StringVarP(&destsYaml, "dests-file", "d", "", "dests.yml")
 }

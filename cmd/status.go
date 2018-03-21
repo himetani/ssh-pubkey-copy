@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"path/filepath"
 	"sync"
 
 	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/himetani/ssh-pubkey-copy/table"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
@@ -26,12 +24,9 @@ func status(cmd *cobra.Command, args []string) error {
 	var dests []ssh.Dest
 	var err error
 
-	if privateKey == "" {
-		home, err := homedir.Dir()
-		if err != nil {
-			return err
-		}
-		privateKey = filepath.Join(home, ".ssh", "id_rsa")
+	privateKey, err := ssh.NewPrivateKey(privateKeyPath)
+	if err != nil {
+		return err
 	}
 
 	if destsYaml != "" {

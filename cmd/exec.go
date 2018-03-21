@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"strings"
 	"sync"
 	"syscall"
 
@@ -14,7 +12,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var publicKey string
+var publicKeyPath string
 
 // execCmd represents the status command
 var execCmd = &cobra.Command{
@@ -24,7 +22,7 @@ var execCmd = &cobra.Command{
 }
 
 func init() {
-	execCmd.Flags().StringVar(&publicKey, "key", "", "Public key to copy")
+	execCmd.Flags().StringVar(&publicKeyPath, "key", "", "Public key to copy")
 
 	execCmd.RunE = exec
 	RootCmd.AddCommand(execCmd)
@@ -46,7 +44,7 @@ func exec(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	pubKeyContent, err := getPubKeyContent(publicKey)
+	content, err := ssh.NewPublicKeyContent(publicKeyPath)
 	if err != nil {
 		return err
 	}
@@ -67,7 +65,7 @@ func exec(cmd *cobra.Command, args []string) error {
 				return
 			}
 			defer session.Close()
-			rows[i] = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.Copy(session, pubKeyContent)}
+			rows[i] = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.Copy(session, content)}
 			return
 		}(i, d)
 	}
@@ -87,12 +85,4 @@ func getPassword() (string, error) {
 	fmt.Println("")
 
 	return string(password), nil
-}
-
-func getPubKeyContent(pubKeyPath string) (string, error) {
-	content, err := ioutil.ReadFile(pubKeyPath)
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimRight(string(content), "\n"), nil
 }

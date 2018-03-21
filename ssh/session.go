@@ -2,7 +2,6 @@ package ssh
 
 import (
 	"fmt"
-	"io/ioutil"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -37,22 +36,12 @@ type Closer interface {
 }
 
 // NewPrivateKeySession returns Session Wrapper instance whose session is established by private key
-func NewPrivateKeySession(ip, port, user, privateKey string) (*Wrapper, error) {
-	buf, err := ioutil.ReadFile(privateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	key, err := ssh.ParsePrivateKey(buf)
-	if err != nil {
-		return nil, err
-	}
-
+func NewPrivateKeySession(ip, port, user string, privateKey ssh.Signer) (*Wrapper, error) {
 	config := &ssh.ClientConfig{
 		User:            user,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(key),
+			ssh.PublicKeys(privateKey),
 		},
 		Timeout: 1 * time.Second,
 	}
