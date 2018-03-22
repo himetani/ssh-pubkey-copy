@@ -1,6 +1,7 @@
 package ssh
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -21,7 +22,7 @@ type Session interface {
 type Terminal interface {
 	Session
 	Starter
-	//Sender
+	Sender
 	Ender
 }
 
@@ -42,7 +43,7 @@ type Closer interface {
 
 // Sender is the interface that wraps Send method
 type Sender interface {
-	Send(string) ([]byte, error)
+	Send(string) error
 }
 
 // Starter is the interface that wraps Start method
@@ -143,7 +144,8 @@ type PseudoTerminal struct {
 	conn    *ssh.Client
 	session *ssh.Session
 	Session
-	in io.WriteCloser
+	in      io.WriteCloser
+	outPipe io.Reader
 }
 
 // Close is the function to close the session & connection
@@ -172,10 +174,11 @@ func (p *PseudoTerminal) Exec(cmd string) ([]byte, error) {
 func (p *PseudoTerminal) Start() error {
 	defer fmt.Println("Start Pseudo Terminal")
 
-	_, outBuf := io.Pipe()
+	inBuf, outBuf := io.Pipe()
 	in, _ := p.session.StdinPipe()
 
 	p.in = in
+	p.outPipe = inBuf
 	p.session.Stdout = outBuf
 	p.session.Stderr = os.Stderr
 
@@ -184,19 +187,38 @@ func (p *PseudoTerminal) Start() error {
 	}
 
 	return nil
+}
 
-	/*
-		fmt.Fprintf(in, "%s; %s\n", cmd, EndCmd)
+// Send is the function to send cmd to a pseudo terminal
+func (p *PseudoTerminal) Send(cmd string) error {
+	defer fmt.Println("Send cmd to Pseudo Terminal")
 
-		scanner := bufio.NewScanner(inBuf)
-		for scanner.Scan() {
-			text := scanner.Text()
-			fmt.Println(text)
-			if text == EndMark {
-				break
-			}
+	if p.in == nil {
+		return errors.New("Psedudo stdin is not initialized")
+	}
+
+	if p.session.Stdout == nil {
+		return errors.New("Psedudo stdout is not initialized")
+	}
+
+	if p.session.Stderr == nil {
+		return errors.New("Psedudo stderr is not initialized")
+	}
+
+	cmd = cmd + "; echo end"
+
+	fmt.Fprintf(p.in, "%s\n", cmd)
+
+	scanner := bufio.NewScanner(p.outPipe)
+	for scanner.Scan() {
+		line := scanner.Text()
+		fmt.Println(line)
+		if line == "end" {
+			break
 		}
-	*/
+	}
+
+	return nil
 }
 
 // End is the function to end session as a pseudo terminal

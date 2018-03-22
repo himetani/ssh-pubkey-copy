@@ -32,6 +32,11 @@ func (p *PubKeyCopyClient) BypassCopy(terminal Terminal, user, publicKey string)
 		return err
 	}
 
+	if err := terminal.Send("whoami"); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
 	if err := terminal.End(); err != nil {
 		fmt.Println(err)
 		return err
