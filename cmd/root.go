@@ -2,13 +2,17 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"syscall"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var port string
 var privateKeyPath string
+var publicKeyPath string
 var destsYaml string
 
 // RootCmd represents the base command when called without any subcommands
@@ -31,4 +35,16 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&port, "port", "22", "Port to connect to on the remote host")
 	RootCmd.PersistentFlags().StringVarP(&privateKeyPath, "identity-file", "i", "", "Selects a file from which the identity (private key) for public key authentication is read (default is $HOME/.ssh/id_rsa.pub)")
 	RootCmd.PersistentFlags().StringVarP(&destsYaml, "dests-file", "d", "", "dests.yml")
+}
+
+func getPassword() (string, error) {
+	fmt.Print("Password: ")
+	password, err := terminal.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
+	fmt.Println("")
+
+	return string(password), nil
 }

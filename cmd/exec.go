@@ -1,18 +1,12 @@
 package cmd
 
 import (
-	"fmt"
-	"log"
 	"sync"
-	"syscall"
 
 	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/himetani/ssh-pubkey-copy/table"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh/terminal"
 )
-
-var publicKeyPath string
 
 // execCmd represents the status command
 var execCmd = &cobra.Command{
@@ -30,7 +24,11 @@ func init() {
 
 func exec(cmd *cobra.Command, args []string) error {
 	var dests []ssh.Dest
-	var err error
+
+	content, err := ssh.NewPublicKeyContent(publicKeyPath)
+	if err != nil {
+		return err
+	}
 
 	if destsYaml != "" {
 		dests, err = ssh.NewDests(destsYaml, port)
@@ -40,11 +38,6 @@ func exec(cmd *cobra.Command, args []string) error {
 	}
 
 	password, err := getPassword()
-	if err != nil {
-		return err
-	}
-
-	content, err := ssh.NewPublicKeyContent(publicKeyPath)
 	if err != nil {
 		return err
 	}
@@ -73,16 +66,4 @@ func exec(cmd *cobra.Command, args []string) error {
 	wg.Wait()
 
 	return nil
-}
-
-func getPassword() (string, error) {
-	fmt.Print("Password: ")
-	password, err := terminal.ReadPassword(int(syscall.Stdin))
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-	fmt.Println("")
-
-	return string(password), nil
 }
