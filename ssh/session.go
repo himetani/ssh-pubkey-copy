@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -23,6 +25,7 @@ type Terminal interface {
 	Session
 	Starter
 	Sender
+	UserSwitcher
 	Ender
 }
 
@@ -49,6 +52,11 @@ type Sender interface {
 // Starter is the interface that wraps Start method
 type Starter interface {
 	Start() error
+}
+
+// UserSwitcher is the interface that wraps SwitchUser method
+type UserSwitcher interface {
+	SwitchUser(string, string) error
 }
 
 // Ender is the interface that wraps Start method
@@ -143,9 +151,10 @@ func (w *Wrapper) Exec(cmd string) ([]byte, error) {
 type PseudoTerminal struct {
 	conn    *ssh.Client
 	session *ssh.Session
-	Session
-	in      io.WriteCloser
-	outPipe io.Reader
+	Terminal
+	in  io.WriteCloser
+	out io.Reader
+	err io.Reader
 }
 
 // Close is the function to close the session & connection
@@ -172,14 +181,13 @@ func (p *PseudoTerminal) Exec(cmd string) ([]byte, error) {
 
 // Start is the function to start session as a pseudo terminal
 func (p *PseudoTerminal) Start() error {
-	defer fmt.Println("Start Pseudo Terminal")
+	defer fmt.Println("[Debug] Start Pseudo Terminal")
 
-	inBuf, outBuf := io.Pipe()
-	in, _ := p.session.StdinPipe()
+	p.in, _ = p.session.StdinPipe()
+	p.out, _ = p.session.StdoutPipe()
+	p.err, _ = p.session.StderrPipe()
 
-	p.in = in
-	p.outPipe = inBuf
-	p.session.Stdout = outBuf
+	p.session.Stdout = os.Stdout
 	p.session.Stderr = os.Stderr
 
 	if err := p.session.Shell(); err != nil {
@@ -191,7 +199,7 @@ func (p *PseudoTerminal) Start() error {
 
 // Send is the function to send cmd to a pseudo terminal
 func (p *PseudoTerminal) Send(cmd string) error {
-	defer fmt.Println("Send cmd to Pseudo Terminal")
+	defer fmt.Println("[Debug] Send cmd to Pseudo Terminal")
 
 	if p.in == nil {
 		return errors.New("Psedudo stdin is not initialized")
@@ -205,15 +213,15 @@ func (p *PseudoTerminal) Send(cmd string) error {
 		return errors.New("Psedudo stderr is not initialized")
 	}
 
-	cmd = cmd + "; echo end"
+	cmd = fmt.Sprintf("%s; echo end\n", cmd)
 
-	fmt.Fprintf(p.in, "%s\n", cmd)
+	fmt.Fprintf(p.in, cmd)
 
-	scanner := bufio.NewScanner(p.outPipe)
+	scanner := bufio.NewScanner(p.out)
 	for scanner.Scan() {
 		line := scanner.Text()
 		fmt.Println(line)
-		if line == "end" {
+		if strings.Contains(line, "end") {
 			break
 		}
 	}
@@ -221,9 +229,53 @@ func (p *PseudoTerminal) Send(cmd string) error {
 	return nil
 }
 
+// SwitchUser is the function to switch user on pseudo terminal login sesion
+func (p *PseudoTerminal) SwitchUser(user, passwd string) error {
+	defer fmt.Printf("[Debug] Switch User to Pseudo Terminal. Username: %s\n", user)
+
+	if p.in == nil {
+		return errors.New("Psedudo stdin is not initialized")
+	}
+
+	if p.session.Stdout == nil {
+		return errors.New("Psedudo stdout is not initialized")
+	}
+
+	if p.session.Stderr == nil {
+		return errors.New("Psedudo stderr is not initialized")
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		scanner := bufio.NewScanner(p.out)
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println(line)
+			if strings.Contains(line, "password") {
+				fmt.Printf("[Debug] End of scanning password line: %s\n", line)
+				wg.Done()
+				return
+			}
+		}
+	}()
+
+	fmt.Println("[Debug] Start to input command")
+	sudoCmd := fmt.Sprintf("sudo su - %s\n", user)
+	fmt.Fprintf(p.in, sudoCmd)
+
+	time.Sleep(50 * time.Millisecond)
+	inputPasswd := fmt.Sprintf("%s\n", passwd)
+	fmt.Fprintf(p.in, inputPasswd)
+
+	wg.Wait()
+	return nil
+}
+
 // End is the function to end session as a pseudo terminal
 func (p *PseudoTerminal) End() error {
-	defer fmt.Println("End Pseudo Terminal")
+	defer fmt.Println("[Debug] End Pseudo Terminal")
 
 	if p.in == nil {
 		return errors.New("Psedudo stdin is not initialized")

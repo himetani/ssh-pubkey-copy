@@ -1,6 +1,6 @@
 [{
     "host": "127.0.0.1",
-    "user": "test1"
+    "user": "common"
 },{
     "host": "127.0.0.1",
     "user": "test2"

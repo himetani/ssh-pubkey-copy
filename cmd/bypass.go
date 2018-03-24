@@ -25,6 +25,8 @@ func init() {
 func bypass(cmd *cobra.Command, args []string) error {
 	var dests []ssh.Dest
 
+	bypass := args[0]
+
 	content, err := ssh.NewPublicKeyContent(publicKeyPath)
 	if err != nil {
 		return err
@@ -37,7 +39,7 @@ func bypass(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	password, err := getPassword()
+	passwd, err := getPassword()
 	if err != nil {
 		return err
 	}
@@ -51,12 +53,12 @@ func bypass(cmd *cobra.Command, args []string) error {
 	dest := dests[0]
 	go func() {
 		defer wg.Done()
-		terminal, err := ssh.NewPseudoTerminal(dest.Host, dest.Port, dest.User, password)
+		terminal, err := ssh.NewPseudoTerminal(dest.Host, dest.Port, bypass, passwd)
 		if err != nil {
 			row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
 			return
 		}
-		row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, content)}
+		row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, passwd, content)}
 		defer terminal.Close()
 		return
 	}()
