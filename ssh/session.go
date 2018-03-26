@@ -223,8 +223,8 @@ func (p *PseudoTerminal) Send(cmd string) error {
 	scanner := bufio.NewScanner(p.out)
 	for scanner.Scan() {
 		line := scanner.Text()
-		fmt.Println(line)
 		if strings.Contains(line, "end") {
+			time.Sleep(1 * time.Second)
 			break
 		}
 	}
@@ -268,7 +268,7 @@ func (p *PseudoTerminal) SwitchUser(user, passwd string) error {
 	sudoCmd := fmt.Sprintf("sudo su - %s\n", user)
 	fmt.Fprintf(p.in, sudoCmd)
 
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 	inputPasswd := fmt.Sprintf("%s\n", passwd)
 	fmt.Fprintf(p.in, inputPasswd)
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/himetani/ssh-pubkey-copy/ssh"
@@ -48,20 +49,23 @@ func bypass(cmd *cobra.Command, args []string) error {
 	var row table.Row
 
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(len(dests))
 
-	dest := dests[0]
-	go func() {
-		defer wg.Done()
-		terminal, err := ssh.NewPseudoTerminal(dest.Host, dest.Port, bypass, passwd)
-		if err != nil {
-			row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
+	for _, dest := range dests {
+		dest := dest
+		fmt.Println(dest.Host)
+		go func() {
+			defer wg.Done()
+			terminal, err := ssh.NewPseudoTerminal(dest.Host, dest.Port, bypass, passwd)
+			if err != nil {
+				row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
+				return
+			}
+			row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, passwd, content)}
+			defer terminal.Close()
 			return
-		}
-		row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, passwd, content)}
-		defer terminal.Close()
-		return
-	}()
+		}()
+	}
 
 	wg.Wait()
 

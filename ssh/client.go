@@ -37,28 +37,8 @@ func (p *PubKeyCopyClient) BypassCopy(terminal Terminal, user, passwd, publicKey
 		return err
 	}
 
-	if err := terminal.Send("mkdir -p $HOME/.ssh"); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	if err := terminal.Send("chmod 755 $HOME/.ssh"); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	if err := terminal.Send("touch $HOME/.ssh/authorized_keys"); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	if err := terminal.Send("chmod 600 $HOME/.ssh/authorized_keys"); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	appendCmd := fmt.Sprintf("echo '%s' >> $HOME/.ssh/authorized_keys", publicKey)
-	if err := terminal.Send(appendCmd); err != nil {
+	cmd := fmt.Sprintf("mkdir -p $HOME/.ssh; chmod 755 $HOME/.ssh;touch $HOME/.ssh/authorized_keys;chmod 600 $HOME/.ssh/authorized_keys;echo '%s'>>$HOME/.ssh/authorized_keys", publicKey)
+	if err := terminal.Send(cmd); err != nil {
 		fmt.Println(err)
 		return err
 	}
