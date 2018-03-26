@@ -65,22 +65,20 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
    config.vm.provision "shell", inline: <<-SHELL
 userdel test1
-userdel test2
-userdel test3
-userdel common
+userdel common1
+userdel common2
+userdel common3
 rm -rf /home/test1
-rm -rf /home/test2
-rm -rf /home/test3
-rm -rf /home/common
+rm -rf /home/common1
+rm -rf /home/common2
+rm -rf /home/common3
 useradd test1
-useradd test2
-useradd test3
-useradd common
+useradd common1
+useradd common2
+useradd common3
 echo 'fakepass' | passwd --stdin test1
-echo 'fakepass' | passwd --stdin test2
-echo 'fakepass' | passwd --stdin test3
-echo 'test1 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
-echo 'test2 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
-echo 'test3 ALL=(ALL:ALL) /bin/su - common' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common1' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common2' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common3' | sudo EDITOR='tee -a' visudo
    SHELL
 end

@@ -2,10 +2,10 @@ package ssh
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -183,12 +183,15 @@ func (p *PseudoTerminal) Exec(cmd string) ([]byte, error) {
 func (p *PseudoTerminal) Start() error {
 	defer fmt.Println("[Debug] Start Pseudo Terminal")
 
+	out := bytes.NewBuffer(nil)
+	err := bytes.NewBuffer(nil)
+
 	p.in, _ = p.session.StdinPipe()
 	p.out, _ = p.session.StdoutPipe()
 	p.err, _ = p.session.StderrPipe()
 
-	p.session.Stdout = os.Stdout
-	p.session.Stderr = os.Stderr
+	p.session.Stdout = out
+	p.session.Stderr = err
 
 	if err := p.session.Shell(); err != nil {
 		return errors.New(fmt.Sprintf("failed to start shell: %s", err))
