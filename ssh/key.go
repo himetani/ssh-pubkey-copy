@@ -27,6 +27,14 @@ func NewPrivateKey(path string) (ssh.Signer, error) {
 }
 
 func NewPublicKeyContent(path string) (string, error) {
+	if path == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			return "", err
+		}
+		path = filepath.Join(home, ".ssh", "id_rsa.pub")
+	}
+
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
 		return "", err
