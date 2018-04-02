@@ -15,17 +15,29 @@ import (
 
 // Terminal is the interface that wraps session behavior and terminal specific behavior.
 type Terminal interface {
-	Session
-	Starter
 	Sender
 	UserSwitcher
 	Ender
 }
 
+// Sender is the interface that wraps Send method
+type Sender interface {
+	Send(string) error
+}
+
+// UserSwitcher is the interface that wraps SwitchUser method
+type UserSwitcher interface {
+	SwitchUser(string, string) error
+}
+
+// Ender is the interface that wraps Start method
+type Ender interface {
+	End() error
+}
+
 // PseudoTerminal is the struct that represents psudo terminal ssh session
 type PseudoTerminal struct {
-	conn    *ssh.Client
-	session *ssh.Session
+	Session
 	Terminal
 	in  io.WriteCloser
 	out io.Reader
@@ -33,46 +45,19 @@ type PseudoTerminal struct {
 }
 
 // Close is the function to close the session & connection
-func (s *PseudoTerminal) Close() {
-	if s.session != nil {
-		s.session.Close()
-	}
-
-	if s.conn != nil {
-		s.conn.Close()
-	}
+func (p *PseudoTerminal) Close() {
+	p.Close()
 }
 
 // Connect is the funcion to connect using seession
-func (w *PseudoTerminal) Connect() ([]byte, error) {
+func (p *PseudoTerminal) Connect() ([]byte, error) {
 	cmd := fmt.Sprintf("echo 'connect'\n")
-	return w.session.Output(cmd)
+	return p.Exec(cmd)
 }
 
 // Exec is the function to exec any cmd on the session
 func (p *PseudoTerminal) Exec(cmd string) ([]byte, error) {
-	return p.session.Output(cmd)
-}
-
-// Start is the function to start session as a pseudo terminal
-func (p *PseudoTerminal) Start() error {
-	defer fmt.Println("[Debug] Start Pseudo Terminal")
-
-	out := bytes.NewBuffer(nil)
-	err := bytes.NewBuffer(nil)
-
-	p.in, _ = p.session.StdinPipe()
-	p.out, _ = p.session.StdoutPipe()
-	p.err, _ = p.session.StderrPipe()
-
-	p.session.Stdout = out
-	p.session.Stderr = err
-
-	if err := p.session.Shell(); err != nil {
-		return errors.New(fmt.Sprintf("failed to start shell: %s", err))
-	}
-
-	return nil
+	return p.Exec(cmd)
 }
 
 // Send is the function to send cmd to a pseudo terminal
@@ -83,11 +68,11 @@ func (p *PseudoTerminal) Send(cmd string) error {
 		return errors.New("Psedudo stdin is not initialized")
 	}
 
-	if p.session.Stdout == nil {
+	if p.out == nil {
 		return errors.New("Psedudo stdout is not initialized")
 	}
 
-	if p.session.Stderr == nil {
+	if p.err == nil {
 		return errors.New("Psedudo stderr is not initialized")
 	}
 
@@ -115,11 +100,11 @@ func (p *PseudoTerminal) SwitchUser(user, passwd string) error {
 		return errors.New("Psedudo stdin is not initialized")
 	}
 
-	if p.session.Stdout == nil {
+	if p.out == nil {
 		return errors.New("Psedudo stdout is not initialized")
 	}
 
-	if p.session.Stderr == nil {
+	if p.err == nil {
 		return errors.New("Psedudo stderr is not initialized")
 	}
 
@@ -159,11 +144,11 @@ func (p *PseudoTerminal) End() error {
 		return errors.New("Psedudo stdin is not initialized")
 	}
 
-	if p.session.Stdout == nil {
+	if p.out == nil {
 		return errors.New("Psedudo stdout is not initialized")
 	}
 
-	if p.session.Stderr == nil {
+	if p.err == nil {
 		return errors.New("Psedudo stderr is not initialized")
 	}
 
@@ -172,38 +157,26 @@ func (p *PseudoTerminal) End() error {
 }
 
 // NewPseudoTerminal returns PseudoTerminal instance whose session is established by password.
-func NewPseudoTerminal(ip, port, user, password string) (*PseudoTerminal, error) {
-	config := &ssh.ClientConfig{
-		User:            user,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Auth: []ssh.AuthMethod{
-			ssh.Password(password),
-		},
-		Timeout: 1 * time.Second,
-	}
-
-	conn, err := ssh.Dial("tcp", ip+":"+port, config)
-	if err != nil {
-		return nil, err
-	}
-
-	session, err := conn.NewSession()
-	if err != nil {
-		return nil, err
-	}
-
+func NewPseudoTerminal(w *Wrapper) (*PseudoTerminal, error) {
+	in, _ := w.session.StdinPipe()
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          0,     // disable echoing
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
 
-	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
+	if err := w.session.RequestPty("xterm", 80, 40, modes); err != nil {
 		return nil, errors.New(fmt.Sprintf("request for pseudo terminal failed: %s", err))
 	}
 
+	if err := w.session.Shell(); err != nil {
+		return nil, errors.New(fmt.Sprintf("failed to start shell: %s", err))
+	}
+
 	return &PseudoTerminal{
-		conn:    conn,
-		session: session,
+		Session: w,
+		in:      in,
+		out:     bytes.NewBuffer(nil),
+		err:     bytes.NewBuffer(nil),
 	}, nil
 }

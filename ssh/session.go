@@ -11,6 +11,7 @@ import (
 type Session interface {
 	Executor
 	Connector
+	Loginer
 	Closer
 }
 
@@ -24,29 +25,14 @@ type Connector interface {
 	Connect() ([]byte, error)
 }
 
+// Loginer is the interface that wraps Login method
+type Loginer interface {
+	Login() error
+}
+
 // Closer is the interface that wraps Close method
 type Closer interface {
 	Close()
-}
-
-// Sender is the interface that wraps Send method
-type Sender interface {
-	Send(string) error
-}
-
-// Starter is the interface that wraps Start method
-type Starter interface {
-	Start() error
-}
-
-// UserSwitcher is the interface that wraps SwitchUser method
-type UserSwitcher interface {
-	SwitchUser(string, string) error
-}
-
-// Ender is the interface that wraps Start method
-type Ender interface {
-	End() error
 }
 
 // NewPrivateKeySession returns Session Wrapper instance whose session is established by private key
@@ -111,13 +97,13 @@ type Wrapper struct {
 }
 
 // Close is the function to close the session & connection
-func (s *Wrapper) Close() {
-	if s.session != nil {
-		s.session.Close()
+func (w *Wrapper) Close() {
+	if w.session != nil {
+		w.session.Close()
 	}
 
-	if s.conn != nil {
-		s.conn.Close()
+	if w.conn != nil {
+		w.conn.Close()
 	}
 }
 

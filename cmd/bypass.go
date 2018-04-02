@@ -56,7 +56,8 @@ func bypass(cmd *cobra.Command, args []string) error {
 		fmt.Println(dest.Host)
 		go func() {
 			defer wg.Done()
-			terminal, err := ssh.NewPseudoTerminal(dest.Host, dest.Port, bypass, passwd)
+			wrapper, err := ssh.NewPasswordSession(dest.Host, dest.Port, bypass, passwd)
+			terminal, err := ssh.NewPseudoTerminal(wrapper)
 			if err != nil {
 				row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
 				return

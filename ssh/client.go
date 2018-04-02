@@ -27,11 +27,6 @@ func (p *PubKeyCopyClient) Copy(session Session, publicKey string) error {
 
 // Copy is func to copy the private key using session
 func (p *PubKeyCopyClient) BypassCopy(terminal Terminal, user, passwd, publicKey string) error {
-	if err := terminal.Start(); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
 	if err := terminal.SwitchUser(user, passwd); err != nil {
 		fmt.Println(err)
 		return err
