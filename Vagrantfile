@@ -68,17 +68,45 @@ userdel test1
 userdel common1
 userdel common2
 userdel common3
+userdel common4
+userdel common5
+userdel common6
+userdel common7
+userdel common8
+userdel common9
+userdel common10
 rm -rf /home/test1
 rm -rf /home/common1
 rm -rf /home/common2
 rm -rf /home/common3
+rm -rf /home/common4
+rm -rf /home/common5
+rm -rf /home/common6
+rm -rf /home/common7
+rm -rf /home/common8
+rm -rf /home/common9
+rm -rf /home/common10
 useradd test1
 useradd common1
 useradd common2
 useradd common3
+useradd common4
+useradd common5
+useradd common6
+useradd common7
+useradd common8
+useradd common9
+useradd common10
 echo 'fakepass' | passwd --stdin test1
 echo 'test1 ALL=(ALL:ALL) /bin/su - common1' | sudo EDITOR='tee -a' visudo
 echo 'test1 ALL=(ALL:ALL) /bin/su - common2' | sudo EDITOR='tee -a' visudo
 echo 'test1 ALL=(ALL:ALL) /bin/su - common3' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common4' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common5' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common6' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common7' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common8' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common9' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - common10' | sudo EDITOR='tee -a' visudo
    SHELL
 end
