@@ -2,7 +2,6 @@ package ssh
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -46,7 +45,7 @@ type PseudoTerminal struct {
 
 // Close is the function to close the session & connection
 func (p *PseudoTerminal) Close() {
-	p.Close()
+	p.Session.Close()
 }
 
 // Connect is the funcion to connect using seession
@@ -128,7 +127,7 @@ func (p *PseudoTerminal) SwitchUser(user, passwd string) error {
 	sudoCmd := fmt.Sprintf("sudo su - %s\n", user)
 	fmt.Fprintf(p.in, sudoCmd)
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(1000 * time.Millisecond)
 	inputPasswd := fmt.Sprintf("%s\n", passwd)
 	fmt.Fprintf(p.in, inputPasswd)
 
@@ -158,7 +157,9 @@ func (p *PseudoTerminal) End() error {
 
 // NewPseudoTerminal returns PseudoTerminal instance whose session is established by password.
 func NewPseudoTerminal(w *Wrapper) (*PseudoTerminal, error) {
-	in, _ := w.session.StdinPipe()
+	inPipe, _ := w.session.StdinPipe()
+	outPipe, _ := w.session.StdoutPipe()
+	errPipe, _ := w.session.StderrPipe()
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          0,     // disable echoing
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
@@ -175,8 +176,8 @@ func NewPseudoTerminal(w *Wrapper) (*PseudoTerminal, error) {
 
 	return &PseudoTerminal{
 		Session: w,
-		in:      in,
-		out:     bytes.NewBuffer(nil),
-		err:     bytes.NewBuffer(nil),
+		in:      inPipe,
+		out:     outPipe,
+		err:     errPipe,
 	}, nil
 }
