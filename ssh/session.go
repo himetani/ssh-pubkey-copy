@@ -48,7 +48,7 @@ func NewPrivateKeySession(ip, port, user string, privateKey ssh.Signer) (*Wrappe
 
 	conn, err := ssh.Dial("tcp", ip+":"+port, config)
 	if err != nil {
-		return nil, err
+		return nil, &ConnectionError{msg: err.Error()}
 	}
 
 	session, err := conn.NewSession()
@@ -75,7 +75,7 @@ func NewPasswordSession(ip, port, user, password string) (*Wrapper, error) {
 
 	conn, err := ssh.Dial("tcp", ip+":"+port, config)
 	if err != nil {
-		return nil, err
+		return nil, &ConnectionError{msg: "Invalid server"}
 	}
 
 	session, err := conn.NewSession()

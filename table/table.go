@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -23,7 +24,11 @@ func Render(rows []Row) {
 
 	for _, r := range rows {
 		if r.Err != nil {
-			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[X] Not copied"})
+			if serr, ok := r.Err.(*ssh.ConnectionError); ok {
+				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), serr.Error()})
+			} else {
+				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[X] Not copied"})
+			}
 		} else {
 			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Already Copied"})
 		}
