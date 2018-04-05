@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/himetani/ssh-pubkey-copy/ssh"
-	"github.com/himetani/ssh-pubkey-copy/table"
 	"github.com/spf13/cobra"
 )
 
@@ -46,7 +45,7 @@ func bypass(cmd *cobra.Command, args []string) error {
 	}
 
 	client := ssh.PubKeyCopyClient{}
-	var row table.Row
+	var row ssh.Result
 
 	var wg sync.WaitGroup
 	wg.Add(len(dests))
@@ -59,10 +58,10 @@ func bypass(cmd *cobra.Command, args []string) error {
 			wrapper, err := ssh.NewPasswordSession(dest.Host, dest.Port, bypass, passwd)
 			terminal, err := ssh.NewPseudoTerminal(wrapper)
 			if err != nil {
-				row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
+				row = ssh.Result{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
 				return
 			}
-			row = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, passwd, content)}
+			row = ssh.Result{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, passwd, content)}
 			defer terminal.Close()
 			return
 		}()
