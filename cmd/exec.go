@@ -58,7 +58,13 @@ func exec(cmd *cobra.Command, args []string) error {
 				return
 			}
 			defer session.Close()
-			rows[i] = table.Row{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.Copy(session, content)}
+
+			rows[i] = table.Row{
+				Host: dest.Host,
+				Port: dest.Port,
+				User: dest.User,
+				Err: client.Copy(session, content)
+			}
 			return
 		}(i, d)
 	}
