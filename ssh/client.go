@@ -1,6 +1,10 @@
 package ssh
 
-import "fmt"
+import (
+	"fmt"
+
+	"golang.org/x/crypto/ssh"
+)
 
 type Pinger interface {
 	Ping()
@@ -43,4 +47,19 @@ func (p *PubKeyCopyClient) BypassCopy(terminal Terminal, user, passwd, publicKey
 	}
 
 	return nil
+}
+
+func IsCopy(ip, port, user string, privateKey ssh.Signer, resultChan chan<- Result) {
+	go func() {
+		defer close(resultChan)
+
+		session, err := NewPrivateKeySession(ip, port, user, privateKey)
+		if err != nil {
+			resultChan <- Result{Host: ip, Port: port, User: user, Err: err}
+			return
+		}
+		defer session.Close()
+		resultChan <- Result{Host: ip, Port: port, User: user, Err: nil}
+		return
+	}()
 }

@@ -9,12 +9,12 @@ import (
 )
 
 // Render is the function that render the table
-func Render(rows []ssh.Result) {
+func Render(rr []ssh.Result) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Destination", "Result"})
 	table.SetRowLine(true)
 
-	for _, r := range rows {
+	for _, r := range rr {
 		if r.Err != nil {
 			if serr, ok := r.Err.(*ssh.ConnectionError); ok {
 				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), serr.Error()})
