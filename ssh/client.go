@@ -65,19 +65,29 @@ func IsCopy(ip, port, user string, privateKey ssh.Signer) chan Result {
 	return out
 }
 
-func Copy(ip, port, user string, privateKey ssh.Signer, resultChan chan<- Result) {
+func Copy(ip, port, user, passwd, content string) chan Result {
+	out := make(chan Result)
 	go func() {
-		/*
-			defer close(resultChan)
+		defer close(out)
 
-			session, err := NewPrivateKeySession(ip, port, user, privateKey)
-			if err != nil {
-				resultChan <- Result{Host: ip, Port: port, User: user, Err: err}
-				return
-			}
-			defer session.Close()
-			resultChan <- Result{Host: ip, Port: port, User: user, Err: nil}
+		session, err := NewPasswordSession(ip, port, user, passwd)
+		if err != nil {
+			out <- Result{Host: ip, Port: port, User: user, Err: err}
 			return
-		*/
+		}
+		defer session.Close()
+
+		cmd := fmt.Sprintf("mkdir -p $HOME/.ssh; chmod 755 $HOME/.ssh; touch $HOME/.ssh/authorized_keys; chmod 600 $HOME/.ssh/authorized_keys; echo '%s'>> $HOME/.ssh/authorized_keys", content)
+
+		_, err = session.Exec(cmd)
+
+		out <- Result{
+			Host: ip,
+			Port: port,
+			User: user,
+			Err:  err,
+		}
+		return
 	}()
+	return out
 }

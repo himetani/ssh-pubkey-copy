@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"sync"
-
 	"github.com/himetani/ssh-pubkey-copy/ssh"
+	"github.com/himetani/ssh-pubkey-copy/table"
 	"github.com/spf13/cobra"
 )
 
@@ -36,39 +35,24 @@ func exec(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	password, err := getPassword()
+	passwd, err := getPassword()
 	if err != nil {
 		return err
 	}
 
-	client := ssh.PubKeyCopyClient{}
 	rows := make([]ssh.Result, len(dests))
 
-	var wg sync.WaitGroup
-	wg.Add(len(dests))
+	rr := make([]<-chan ssh.Result, len(dests), len(dests))
 
 	for i, d := range dests {
-		go func(i int, dest ssh.Dest) {
-			defer wg.Done()
-
-			session, err := ssh.NewPasswordSession(dest.Host, dest.Port, dest.User, password)
-			if err != nil {
-				rows[i] = ssh.Result{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
-				return
-			}
-			defer session.Close()
-
-			rows[i] = ssh.Result{
-				Host: dest.Host,
-				Port: dest.Port,
-				User: dest.User,
-				Err:  client.Copy(session, content),
-			}
-			return
-		}(i, d)
+		rr[i] = ssh.Copy(d.Host, d.Port, d.User, passwd, content)
 	}
 
-	wg.Wait()
+	for i, r := range rr {
+		rows[i] = <-r
+	}
+
+	table.Render(rows)
 
 	return nil
 }
