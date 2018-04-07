@@ -49,17 +49,35 @@ func (p *PubKeyCopyClient) BypassCopy(terminal Terminal, user, passwd, publicKey
 	return nil
 }
 
-func IsCopy(ip, port, user string, privateKey ssh.Signer, resultChan chan<- Result) {
+func IsCopy(ip, port, user string, privateKey ssh.Signer) chan Result {
+	out := make(chan Result)
 	go func() {
-		defer close(resultChan)
-
+		defer close(out)
 		session, err := NewPrivateKeySession(ip, port, user, privateKey)
 		if err != nil {
-			resultChan <- Result{Host: ip, Port: port, User: user, Err: err}
+			out <- Result{Host: ip, Port: port, User: user, Err: err}
 			return
 		}
 		defer session.Close()
-		resultChan <- Result{Host: ip, Port: port, User: user, Err: nil}
+		out <- Result{Host: ip, Port: port, User: user, Err: nil}
 		return
+	}()
+	return out
+}
+
+func Copy(ip, port, user string, privateKey ssh.Signer, resultChan chan<- Result) {
+	go func() {
+		/*
+			defer close(resultChan)
+
+			session, err := NewPrivateKeySession(ip, port, user, privateKey)
+			if err != nil {
+				resultChan <- Result{Host: ip, Port: port, User: user, Err: err}
+				return
+			}
+			defer session.Close()
+			resultChan <- Result{Host: ip, Port: port, User: user, Err: nil}
+			return
+		*/
 	}()
 }

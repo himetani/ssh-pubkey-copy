@@ -36,13 +36,10 @@ func status(cmd *cobra.Command, args []string) error {
 
 	rows := make([]ssh.Result, len(dests))
 
-	rr := make([]chan ssh.Result, len(dests), len(dests))
+	rr := make([]<-chan ssh.Result, len(dests), len(dests))
 
 	for i, d := range dests {
-		r := make(chan ssh.Result)
-		rr[i] = r
-
-		ssh.IsCopy(d.Host, d.Port, d.User, privateKey, r)
+		rr[i] = ssh.IsCopy(d.Host, d.Port, d.User, privateKey)
 	}
 
 	for i, r := range rr {
