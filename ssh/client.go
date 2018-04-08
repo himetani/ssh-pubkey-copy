@@ -65,10 +65,18 @@ func IsCopy(ip, port, user string, privateKey ssh.Signer) chan Result {
 	return out
 }
 
-func Copy(ip, port, user, passwd, content string) chan Result {
+func Copy(ip, port, user, passwd, content string, in <-chan Result) chan Result {
 	out := make(chan Result)
 	go func() {
 		defer close(out)
+
+		r := <-in
+		if r.Err == nil {
+			out <- Result{Host: ip, Port: port, User: user, Err: nil}
+			return
+		}
+
+		fmt.Printf("Copy action done: %s\n", user)
 
 		session, err := NewPasswordSession(ip, port, user, passwd)
 		if err != nil {

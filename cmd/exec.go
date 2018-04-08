@@ -28,6 +28,11 @@ func exec(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	privateKey, err := ssh.NewPrivateKey(privateKeyPath)
+	if err != nil {
+		return err
+	}
+
 	if destsYaml != "" {
 		dests, err = ssh.NewDests(destsYaml, port)
 		if err != nil {
@@ -45,7 +50,8 @@ func exec(cmd *cobra.Command, args []string) error {
 	rr := make([]<-chan ssh.Result, len(dests), len(dests))
 
 	for i, d := range dests {
-		rr[i] = ssh.Copy(d.Host, d.Port, d.User, passwd, content)
+		c := ssh.IsCopy(d.Host, d.Port, d.User, privateKey)
+		rr[i] = ssh.Copy(d.Host, d.Port, d.User, passwd, content, c)
 	}
 
 	for i, r := range rr {
