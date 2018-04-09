@@ -76,8 +76,6 @@ func Copy(ip, port, user, passwd, content string, in <-chan Result) chan Result 
 			return
 		}
 
-		fmt.Printf("Copy action done: %s\n", user)
-
 		session, err := NewPasswordSession(ip, port, user, passwd)
 		if err != nil {
 			out <- Result{Host: ip, Port: port, User: user, Err: err}

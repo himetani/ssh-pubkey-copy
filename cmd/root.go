@@ -6,6 +6,8 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/himetani/ssh-pubkey-copy/ssh"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -47,4 +49,24 @@ func getPassword() (string, error) {
 	fmt.Println("")
 
 	return string(password), nil
+}
+
+// renderStatus is the function that render the status table
+func renderStatus(rr []ssh.Result) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Destination", "Result"})
+	table.SetRowLine(true)
+
+	for _, r := range rr {
+		if r.Err != nil {
+			if serr, ok := r.Err.(*ssh.ConnectionError); ok {
+				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), serr.Error()})
+			} else {
+				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[X] Not copied"})
+			}
+		} else {
+			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Already Copied"})
+		}
+	}
+	table.Render()
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/himetani/ssh-pubkey-copy/ssh"
-	"github.com/himetani/ssh-pubkey-copy/table"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +57,7 @@ func exec(cmd *cobra.Command, args []string) error {
 		rows[i] = <-r
 	}
 
-	table.Render(rows)
+	renderStatus(rows)
 
 	return nil
 }
