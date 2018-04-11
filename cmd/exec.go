@@ -57,7 +57,7 @@ func exec(cmd *cobra.Command, args []string) error {
 		rows[i] = <-r
 	}
 
-	renderStatus(rows)
+	renderCopyResult(rows)
 
 	return nil
 }

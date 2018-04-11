@@ -54,18 +54,34 @@ func getPassword() (string, error) {
 // renderStatus is the function that render the status table
 func renderStatus(rr []ssh.Result) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Destination", "Result"})
+	table.SetHeader([]string{"Destination", "Status"})
 	table.SetRowLine(true)
 
 	for _, r := range rr {
 		if r.Err != nil {
-			if serr, ok := r.Err.(*ssh.ConnectionError); ok {
-				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), serr.Error()})
+			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[X] Not copied"})
+		} else {
+			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Copied"})
+		}
+	}
+	table.Render()
+}
+
+// renderStatus is the function that render the status table
+func renderCopyResult(rr []ssh.Result) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Destination", "Status", "Action"})
+	table.SetRowLine(true)
+
+	for _, r := range rr {
+		if r.Err != nil {
+			if _, ok := r.Err.(*ssh.SkipCopyError); ok {
+				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Copied", "---"})
 			} else {
-				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[X] Not copied"})
+				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[X] Not copied", r.Err.Error()})
 			}
 		} else {
-			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Already Copied"})
+			table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Copied", "Copy Success"})
 		}
 	}
 	table.Render()

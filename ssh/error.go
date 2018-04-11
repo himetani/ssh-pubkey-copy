@@ -1,9 +1,10 @@
 package ssh
 
-type ConnectionError struct {
+// SkipCopyError is struct of SkipCopyError
+type SkipCopyError struct {
 	msg string
 }
 
-func (e *ConnectionError) Error() string {
-	return e.msg
+func (s *SkipCopyError) Error() string {
+	return s.msg
 }
