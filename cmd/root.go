@@ -76,7 +76,7 @@ func renderCopyResult(rr []ssh.Result) {
 	for _, r := range rr {
 		if r.Err != nil {
 			if _, ok := r.Err.(*ssh.SkipCopyError); ok {
-				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Copied", "---"})
+				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[o] Copied", "----------"})
 			} else {
 				table.Append([]string{fmt.Sprintf("%s@%s:%s", r.User, r.Host, r.Port), "[X] Not copied", r.Err.Error()})
 			}

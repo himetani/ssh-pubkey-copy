@@ -65,7 +65,7 @@ func BypassCopy(ip, port, user, passwd, bypassUser, content string, in <-chan Re
 
 		r := <-in
 		if r.Err == nil {
-			out <- Result{Host: ip, Port: port, User: user, Err: nil}
+			out <- Result{Host: ip, Port: port, User: user, Err: &SkipCopyError{msg: "Already Copied"}}
 			return
 		}
 
