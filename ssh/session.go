@@ -7,34 +7,6 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// Session is the interface that wraps session behavior.
-type Session interface {
-	Executor
-	Connector
-	Loginer
-	Closer
-}
-
-// Executor is the interface that wraps Exec method
-type Executor interface {
-	Exec(string) ([]byte, error)
-}
-
-// Connector is the interface that wraps Connect method
-type Connector interface {
-	Connect() ([]byte, error)
-}
-
-// Loginer is the interface that wraps Login method
-type Loginer interface {
-	Login() error
-}
-
-// Closer is the interface that wraps Close method
-type Closer interface {
-	Close()
-}
-
 // NewPrivateKeySession returns Session Wrapper instance whose session is established by private key
 func NewPrivateKeySession(ip, port, user string, privateKey ssh.Signer) (*Wrapper, error) {
 	config := &ssh.ClientConfig{
@@ -93,7 +65,6 @@ func NewPasswordSession(ip, port, user, password string) (*Wrapper, error) {
 type Wrapper struct {
 	conn    *ssh.Client
 	session *ssh.Session
-	Session
 }
 
 // Close is the function to close the session & connection

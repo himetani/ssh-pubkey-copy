@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"sync"
-
 	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/spf13/cobra"
 )
@@ -25,9 +22,14 @@ func init() {
 func bypass(cmd *cobra.Command, args []string) error {
 	var dests []ssh.Dest
 
-	bypass := args[0]
+	bypassUser := args[0]
 
 	content, err := ssh.NewPublicKeyContent(publicKeyPath)
+	if err != nil {
+		return err
+	}
+
+	privateKey, err := ssh.NewPrivateKey(privateKeyPath)
 	if err != nil {
 		return err
 	}
@@ -44,30 +46,33 @@ func bypass(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client := ssh.PubKeyCopyClient{}
-	var row ssh.Result
+	rows := make([]ssh.Result, len(dests))
 
-	var wg sync.WaitGroup
-	wg.Add(len(dests))
+	rr := make([]<-chan ssh.Result, len(dests), len(dests))
 
-	for _, dest := range dests {
-		dest := dest
-		fmt.Println(dest.Host)
-		go func() {
-			defer wg.Done()
-			wrapper, err := ssh.NewPasswordSession(dest.Host, dest.Port, bypass, passwd)
-			terminal, err := ssh.NewPseudoTerminal(wrapper)
-			if err != nil {
-				row = ssh.Result{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
-				return
-			}
-			row = ssh.Result{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, passwd, content)}
-			defer terminal.Close()
-			return
-		}()
+	for i, d := range dests {
+		c := ssh.IsCopy(d.Host, d.Port, d.User, privateKey)
+		rr[i] = ssh.BypassCopy(d.Host, d.Port, d.User, passwd, bypassUser, content, c)
 	}
 
-	wg.Wait()
+	for i, r := range rr {
+		rows[i] = <-r
+	}
+
+	renderCopyResult(rows)
 
 	return nil
 }
+
+//go func() {
+//			defer wg.Done()
+//			wrapper, err := ssh.NewPasswordSession(dest.Host, dest.Port, bypass, passwd)
+//			terminal, err := ssh.NewPseudoTerminal(wrapper)
+//			if err != nil {
+//				row = ssh.Result{Host: dest.Host, Port: dest.Port, User: dest.User, Err: err}
+//				return
+//			}
+//			row = ssh.Result{Host: dest.Host, Port: dest.Port, User: dest.User, Err: client.BypassCopy(terminal, dest.User, passwd, content)}
+//			defer terminal.Close()
+//			return
+//		}()

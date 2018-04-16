@@ -12,40 +12,17 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// Terminal is the interface that wraps session behavior and terminal specific behavior.
-type Terminal interface {
-	Sender
-	UserSwitcher
-	Ender
-}
-
-// Sender is the interface that wraps Send method
-type Sender interface {
-	Send(string) error
-}
-
-// UserSwitcher is the interface that wraps SwitchUser method
-type UserSwitcher interface {
-	SwitchUser(string, string) error
-}
-
-// Ender is the interface that wraps Start method
-type Ender interface {
-	End() error
-}
-
 // PseudoTerminal is the struct that represents psudo terminal ssh session
 type PseudoTerminal struct {
-	Session
-	Terminal
-	in  io.WriteCloser
-	out io.Reader
-	err io.Reader
+	wrapper *Wrapper
+	in      io.WriteCloser
+	out     io.Reader
+	err     io.Reader
 }
 
 // Close is the function to close the session & connection
 func (p *PseudoTerminal) Close() {
-	p.Session.Close()
+	p.wrapper.Close()
 }
 
 // Connect is the funcion to connect using seession
@@ -175,7 +152,7 @@ func NewPseudoTerminal(w *Wrapper) (*PseudoTerminal, error) {
 	}
 
 	return &PseudoTerminal{
-		Session: w,
+		wrapper: w,
 		in:      inPipe,
 		out:     outPipe,
 		err:     errPipe,
