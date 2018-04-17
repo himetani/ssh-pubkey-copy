@@ -64,49 +64,49 @@ Vagrant.configure("2") do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
    config.vm.provision "shell", inline: <<-SHELL
-userdel test1
-userdel common1
-userdel common2
-userdel common3
-userdel common4
-userdel common5
-userdel common6
-userdel common7
-userdel common8
-userdel common9
-userdel common10
-rm -rf /home/test1
-rm -rf /home/common1
-rm -rf /home/common2
-rm -rf /home/common3
-rm -rf /home/common4
-rm -rf /home/common5
-rm -rf /home/common6
-rm -rf /home/common7
-rm -rf /home/common8
-rm -rf /home/common9
-rm -rf /home/common10
-useradd test1
-useradd common1
-useradd common2
-useradd common3
-useradd common4
-useradd common5
-useradd common6
-useradd common7
-useradd common8
-useradd common9
-useradd common10
-echo 'fakepass' | passwd --stdin test1
-echo 'test1 ALL=(ALL:ALL) /bin/su - common1' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common2' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common3' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common4' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common5' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common6' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common7' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common8' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common9' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - common10' | sudo EDITOR='tee -a' visudo
+userdel bypass
+userdel bypass-test1
+userdel bypass-test2
+userdel bypass-test3
+userdel bypass-test4
+userdel bypass-test5
+userdel bypass-test6
+userdel bypass-test7
+userdel bypass-test8
+userdel bypass-test9
+userdel bypass-test10
+rm -rf /home/bypass
+rm -rf /home/bypass-test1
+rm -rf /home/bypass-test2
+rm -rf /home/bypass-test3
+rm -rf /home/bypass-test4
+rm -rf /home/bypass-test5
+rm -rf /home/bypass-test6
+rm -rf /home/bypass-test7
+rm -rf /home/bypass-test8
+rm -rf /home/bypass-test9
+rm -rf /home/bypass-test10
+useradd bypass 
+useradd bypass-test1
+useradd bypass-test2
+useradd bypass-test3
+useradd bypass-test4
+useradd bypass-test5
+useradd bypass-test6
+useradd bypass-test7
+useradd bypass-test8
+useradd bypass-test9
+useradd bypass-test10
+echo 'fakepass' | passwd --stdin bypass
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test1' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test2' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test3' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test4' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test5' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test6' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test7' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test8' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test9' | sudo EDITOR='tee -a' visudo
+echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test10' | sudo EDITOR='tee -a' visudo
    SHELL
 end
