@@ -98,15 +98,15 @@ useradd bypass-test8
 useradd bypass-test9
 useradd bypass-test10
 echo 'fakepass' | passwd --stdin bypass
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test1' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test2' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test3' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test4' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test5' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test6' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test7' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test8' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test9' | sudo EDITOR='tee -a' visudo
-echo 'test1 ALL=(ALL:ALL) /bin/su - bypass-test10' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test1' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test2' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test3' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test4' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test5' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test6' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test7' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test8' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test9' | sudo EDITOR='tee -a' visudo
+echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test10' | sudo EDITOR='tee -a' visudo
    SHELL
 end
