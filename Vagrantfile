@@ -97,6 +97,7 @@ useradd bypass-test7
 useradd bypass-test8
 useradd bypass-test9
 useradd bypass-test10
+useradd bypass-sudoerr
 echo 'fakepass' | passwd --stdin bypass
 echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test1' | sudo EDITOR='tee -a' visudo
 echo 'bypass ALL=(ALL:ALL) /bin/su - bypass-test2' | sudo EDITOR='tee -a' visudo

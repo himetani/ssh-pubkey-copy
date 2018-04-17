@@ -1,6 +1,7 @@
 package ssh
 
 import (
+	"errors"
 	"fmt"
 
 	"golang.org/x/crypto/ssh"
@@ -84,6 +85,10 @@ func BypassCopy(ip, port, user, passwd, bypassUser, content string, in <-chan Re
 		if err := terminal.SwitchUser(user, passwd); err != nil {
 			out <- Result{Host: ip, Port: port, User: user, Err: err}
 			return
+		}
+
+		if err := terminal.UserCheck(user); err != nil {
+			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("Invalid username or password")}
 		}
 
 		cmd := fmt.Sprintf("mkdir -p $HOME/.ssh; chmod 755 $HOME/.ssh;touch $HOME/.ssh/authorized_keys;chmod 600 $HOME/.ssh/authorized_keys;echo '%s'>>$HOME/.ssh/authorized_keys", content)
