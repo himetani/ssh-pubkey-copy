@@ -72,18 +72,18 @@ func BypassCopy(ip, port, user, passwd, bypassUser, content string, in <-chan Re
 
 		wrapper, err := NewPasswordSession(ip, port, bypassUser, passwd)
 		if err != nil {
-			out <- Result{Host: ip, Port: port, User: user, Err: err}
+			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("connection error")}
 			return
 		}
 
 		terminal, err := NewPseudoTerminal(wrapper)
 		if err != nil {
-			out <- Result{Host: ip, Port: port, User: user, Err: err}
+			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("Terminal initialization error")}
 			return
 		}
 
 		if err := terminal.SwitchUser(user, passwd); err != nil {
-			out <- Result{Host: ip, Port: port, User: user, Err: err}
+			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("Unexpected error at switching user")}
 			return
 		}
 
@@ -93,12 +93,12 @@ func BypassCopy(ip, port, user, passwd, bypassUser, content string, in <-chan Re
 
 		cmd := fmt.Sprintf("mkdir -p $HOME/.ssh; chmod 755 $HOME/.ssh;touch $HOME/.ssh/authorized_keys;chmod 600 $HOME/.ssh/authorized_keys;echo '%s'>>$HOME/.ssh/authorized_keys", content)
 		if err := terminal.Send(cmd); err != nil {
-			out <- Result{Host: ip, Port: port, User: user, Err: err}
+			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("Unexpected error at copying key")}
 			return
 		}
 
 		if err := terminal.End(); err != nil {
-			out <- Result{Host: ip, Port: port, User: user, Err: err}
+			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("Unexpected error at exiting termnal session")}
 			return
 		}
 
