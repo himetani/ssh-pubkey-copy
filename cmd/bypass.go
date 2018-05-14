@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/spf13/cobra"
 )
@@ -13,13 +15,17 @@ var bypassCmd = &cobra.Command{
 }
 
 func init() {
-	bypassCmd.Flags().StringVar(&publicKeyPath, "key", "", "Public key to copy")
+	bypassCmd.Flags().StringVar(&publicKeyPath, "publicKey", "", "Selects a file from which the identity (public key) for public key authentication is read (default is $HOME/.ssh/id_rsa.pub")
 
 	bypassCmd.RunE = bypass
 	RootCmd.AddCommand(bypassCmd)
 }
 
 func bypass(cmd *cobra.Command, args []string) error {
+	if destsYaml == "" {
+		return errors.New("Use -f, --filename option to specify input file")
+	}
+
 	var dests []ssh.Dest
 
 	bypassUser := args[0]

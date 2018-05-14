@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/himetani/ssh-pubkey-copy/ssh"
 	"github.com/spf13/cobra"
 )
@@ -13,13 +15,17 @@ var execCmd = &cobra.Command{
 }
 
 func init() {
-	execCmd.Flags().StringVar(&publicKeyPath, "key", "", "Public key to copy")
+	execCmd.Flags().StringVar(&publicKeyPath, "key", "", "Selects a file from which the identity (public key) for public key authentication is read (default is $HOME/.ssh/id_rsa.pub")
 
 	execCmd.RunE = exec
 	RootCmd.AddCommand(execCmd)
 }
 
 func exec(cmd *cobra.Command, args []string) error {
+	if destsYaml == "" {
+		return errors.New("Use -f, --filename option to specify input file")
+	}
+
 	var dests []ssh.Dest
 
 	content, err := ssh.NewPublicKeyContent(publicKeyPath)
