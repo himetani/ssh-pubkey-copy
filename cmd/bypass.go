@@ -9,7 +9,7 @@ import (
 
 // bypassCmd represents the status command
 var bypassCmd = &cobra.Command{
-	Use:   "bypass",
+	Use:   "bypass [bypassUserName]",
 	Short: "Execute copying the public key to target users of remote host bypassing the user",
 	Long:  `Execute copying the public key to target users of remote host bypassing the user`,
 }
@@ -26,8 +26,11 @@ func bypass(cmd *cobra.Command, args []string) error {
 		return errors.New("Use -f, --filename option to specify input file")
 	}
 
-	var dests []ssh.Dest
+	if len(args) != 1 {
+		return errors.New("Invalid arguments")
+	}
 
+	var dests []ssh.Dest
 	bypassUser := args[0]
 
 	content, err := ssh.NewPublicKeyContent(publicKeyPath)
