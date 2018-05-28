@@ -24,6 +24,25 @@ func IsCopy(ip, port, user string, privateKey ssh.Signer) chan Result {
 	return out
 }
 
+// IsCopy is func to check that ssh's public key is already copied or not
+func IsCopyWithChan(inCh <-chan Result, privateKey ssh.Signer) chan Result {
+	out := make(chan Result)
+	go func() {
+		defer close(out)
+		in := <-inCh
+
+		session, err := NewPrivateKeySession(in.Host, in.Port, in.User, privateKey)
+		if err != nil {
+			out <- Result{Host: in.Host, Port: in.Port, User: in.User, Err: err}
+			return
+		}
+		defer session.Close()
+		out <- Result{Host: in.Host, Port: in.Port, User: in.User, Err: nil}
+		return
+	}()
+	return out
+}
+
 // Copy is func to copy ssh's public key to target user
 func Copy(ip, port, user, passwd, content string, in <-chan Result) chan Result {
 	out := make(chan Result)
@@ -85,10 +104,6 @@ func BypassCopy(ip, port, user, passwd, bypassUser, content string, in <-chan Re
 		if err := terminal.SwitchUser(user, passwd); err != nil {
 			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("Unexpected error at switching user")}
 			return
-		}
-
-		if err := terminal.UserCheck(user); err != nil {
-			out <- Result{Host: ip, Port: port, User: user, Err: errors.New("Invalid username or password")}
 		}
 
 		cmd := fmt.Sprintf("mkdir -p $HOME/.ssh; chmod 755 $HOME/.ssh;touch $HOME/.ssh/authorized_keys;chmod 600 $HOME/.ssh/authorized_keys;echo '%s'>>$HOME/.ssh/authorized_keys", content)

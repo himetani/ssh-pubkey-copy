@@ -66,41 +66,6 @@ func (p *PseudoTerminal) Send(cmd string) error {
 	return nil
 }
 
-// UserCheck is the function to check current user is expected or not
-func (p *PseudoTerminal) UserCheck(expected string) error {
-	if p.in == nil {
-		return errors.New("Psedudo stdin is not initialized")
-	}
-
-	if p.out == nil {
-		return errors.New("Psedudo stdout is not initialized")
-	}
-
-	if p.err == nil {
-		return errors.New("Psedudo stderr is not initialized")
-	}
-
-	cmd := fmt.Sprintf("echo whoami; whoami\n")
-	fmt.Fprintf(p.in, cmd)
-
-	scanner := bufio.NewScanner(p.out)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.Contains(line, "whoami") {
-			break
-		}
-	}
-
-	for scanner.Scan() {
-		user := scanner.Text()
-		if user != expected {
-			return fmt.Errorf("sudo su - %s was failed", expected)
-		}
-		return nil
-	}
-	return errors.New("Unexpected error happend at UserCheck func")
-}
-
 // SwitchUser is the function to switch user on pseudo terminal login sesion
 func (p *PseudoTerminal) SwitchUser(user, passwd string) error {
 	if p.in == nil {

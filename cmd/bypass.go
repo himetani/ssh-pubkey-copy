@@ -61,7 +61,8 @@ func bypass(cmd *cobra.Command, args []string) error {
 
 	for i, d := range dests {
 		c := ssh.IsCopy(d.Host, d.Port, d.User, privateKey)
-		rr[i] = ssh.BypassCopy(d.Host, d.Port, d.User, passwd, bypassUser, content, c)
+		tmpCh := ssh.BypassCopy(d.Host, d.Port, d.User, passwd, bypassUser, content, c)
+		rr[i] = ssh.IsCopyWithChan(tmpCh, privateKey)
 	}
 
 	for i, r := range rr {
